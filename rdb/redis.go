@@ -16,12 +16,12 @@ type Redisclient struct {
 	context context.Context
 }
 
-//
+var rds = &Redisclient{}
+
 func NewRedis(Addr string, Password string, db int) *Redisclient {
 	// 初始化日志
 	initlogger()
 	// 初始化自定的 redisclient 实例
-	rds := &Redisclient{}
 
 	rds.context = context.Background()
 	rds.client = redis.NewClient(&redis.Options{
@@ -37,6 +37,10 @@ func NewRedis(Addr string, Password string, db int) *Redisclient {
 
 	logger.Info("redis connect success!", r)
 	return rds
+}
+
+func Client() *redis.Client {
+	return rds.client
 }
 
 func initlogger() {
