@@ -1,3 +1,3 @@
-# rdb
+# redis
 
-redis 库
+redis 缓存库
