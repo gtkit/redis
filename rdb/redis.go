@@ -39,10 +39,6 @@ func NewRedis(Addr string, Password string, db int) *Redisclient {
 	return rds
 }
 
-func Client() *redis.Client {
-	return rds.client
-}
-
 func initlogger() {
 	if logger.Zlog() == nil {
 		opt := &logger.Option{
@@ -52,6 +48,10 @@ func initlogger() {
 		logger.NewZap(opt)
 		log.Println("redis new zap logger")
 	}
+}
+
+func (r *Redisclient) Client() *redis.Client {
+	return r.client
 }
 
 // Get 读取 redis
