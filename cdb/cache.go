@@ -19,7 +19,7 @@ type CacheClient struct {
 
 var cache = &CacheClient{}
 
-func NewCache(Addr, Password, Prefix string, cdb int) {
+func NewCache(Addr, Password, Prefix string, cdb int) *CacheClient {
 	// 初始化日志
 	initlogger()
 	// 初始化自定的 RedisClient 实例
@@ -37,7 +37,7 @@ func NewCache(Addr, Password, Prefix string, cdb int) {
 	}
 
 	logger.Info("cache init success!", c)
-
+	return cache
 }
 
 func initlogger() {
