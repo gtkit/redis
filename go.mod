@@ -1,4 +1,4 @@
-module gitlab.superjq.com/go-tools/rdb
+module gitlab.superjq.com/go-tools/redis
 
 go 1.17
 
