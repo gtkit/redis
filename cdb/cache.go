@@ -54,6 +54,12 @@ func initlogger() {
 func (c *CacheClient) Client() *redis.Client {
 	return c.client
 }
+func (c *CacheClient) Context() context.Context {
+	return c.context
+}
+func (c *CacheClient) Prefix() string {
+	return c.prefix
+}
 
 // Get 读取 redis
 func (c *CacheClient) Get(k string) string {
