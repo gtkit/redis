@@ -95,6 +95,30 @@ func (r *Redisclient) Del(keys ...string) bool {
 	return true
 }
 
+// Increment 当参数只有 1 个时，为 key，其值增加 1。
+// 当参数有 2 个时，第一个参数为 key ，第二个参数为要增加的值 int64 类型。
+func (r *Redisclient) Incr(parameters ...interface{}) bool {
+	switch len(parameters) {
+	case 1:
+		key := parameters[0].(string)
+		if err := r.client.Incr(r.context, key).Err(); err != nil {
+			logger.Error("Redis key1 ", err)
+			return false
+		}
+	case 2:
+		key := parameters[0].(string)
+		value := parameters[1].(int64)
+		if err := r.client.IncrBy(r.context, key, value).Err(); err != nil {
+			logger.Error("Redis key2 ", err)
+			return false
+		}
+	default:
+		logger.Error("Redis parameters error")
+		return false
+	}
+	return true
+}
+
 // Select 选择指定的 db
 func (r *Redisclient) Select(db int) {
 	_, err := r.client.Pipelined(r.context, func(pipeliner redis.Pipeliner) error {
