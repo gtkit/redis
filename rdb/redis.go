@@ -86,6 +86,16 @@ func (r *Redisclient) Has(key string) bool {
 	return true
 }
 
+// 判断是不是集和中的元素
+func (r *Redisclient) Ismember(set, key string) bool {
+	ism, err := r.client.SIsMember(r.context, set, key).Result()
+	if err != nil {
+		logger.Info("SIsMember error:", err)
+		return false
+	}
+	return ism
+}
+
 // Del 删除存储在 redis 里的数据，支持多个 key 传参
 func (r *Redisclient) Del(keys ...string) bool {
 	if err := r.client.Del(r.context, keys...).Err(); err != nil {
