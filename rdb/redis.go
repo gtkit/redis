@@ -87,8 +87,8 @@ func (r *Redisclient) Has(key string) bool {
 }
 
 // 判断是不是集和中的元素
-func (r *Redisclient) Ismember(set, key string) bool {
-	ism, err := r.client.SIsMember(r.context, set, key).Result()
+func (r *Redisclient) Ismember(key string, member interface{}) bool {
+	ism, err := r.client.SIsMember(r.context, key, member).Result()
 	if err != nil {
 		logger.Info("SIsMember error:", err)
 		return false
