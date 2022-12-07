@@ -96,6 +96,33 @@ func (r *Redisclient) Ismember(key string, member interface{}) bool {
 	return ism
 }
 
+// 添加集合元素
+func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
+	_, err := r.client.SAdd(r.context, key, members).Result()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// 设置key过期时间
+func (r *Redisclient) Expire(key string, duration time.Duration) bool {
+	b, err := r.client.Expire(r.context, key, duration).Result()
+	if err != nil {
+		return false
+	}
+	return b
+}
+
+// 判断key是不是存在
+func (r *Redisclient) Exists(keys ...string) bool {
+	_, err := r.client.Exists(r.context, keys...).Result()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 // Del 删除存储在 redis 里的数据，支持多个 key 传参
 func (r *Redisclient) Del(keys ...string) bool {
 	if err := r.client.Del(r.context, keys...).Err(); err != nil {
