@@ -14,15 +14,17 @@ import (
 type Redisclient struct {
 	client  *redis.Client
 	context context.Context
+	prefix  string // 前缀
 }
 
 var rds = &Redisclient{}
 
-func NewRedis(Addr string, Password string, db int) *Redisclient {
+func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 	// 初始化日志
 	initlogger()
 	// 初始化自定的 redisclient 实例
 
+	rds.prefix = Prefix
 	rds.context = context.Background()
 	rds.client = redis.NewClient(&redis.Options{
 		Addr:     Addr,
@@ -56,7 +58,7 @@ func (r *Redisclient) Client() *redis.Client {
 
 // Get 读取 redis
 func (r *Redisclient) Get(k string) string {
-	rs, err := r.client.Get(r.context, k).Result()
+	rs, err := r.client.Get(r.context, r.prefix+k).Result()
 	if err != nil {
 		// 如果返回的错误是key不存在
 		if errors.Is(err, redis.Nil) {
@@ -70,13 +72,13 @@ func (r *Redisclient) Get(k string) string {
 
 // Set redis
 func (r *Redisclient) Set(k, v string, exp time.Duration) bool {
-	err := r.client.Set(r.context, k, v, exp).Err()
+	err := r.client.Set(r.context, r.prefix+k, v, exp).Err()
 	return err == nil
 }
 
 // Has 判断一个 key 是否存在，内部错误和 redis.Nil 都返回 false
 func (r *Redisclient) Has(key string) bool {
-	_, err := r.client.Get(r.context, key).Result()
+	_, err := r.client.Get(r.context, r.prefix+key).Result()
 	if err != nil {
 		if err != redis.Nil {
 			logger.Error("Redis", "Has", err.Error())
@@ -88,7 +90,7 @@ func (r *Redisclient) Has(key string) bool {
 
 // 判断是不是集和中的元素
 func (r *Redisclient) Ismember(key string, member interface{}) bool {
-	ism, err := r.client.SIsMember(r.context, key, member).Result()
+	ism, err := r.client.SIsMember(r.context, r.prefix+key, member).Result()
 	if err != nil {
 		logger.Info("SIsMember error:", err)
 		return false
@@ -98,7 +100,7 @@ func (r *Redisclient) Ismember(key string, member interface{}) bool {
 
 // 添加集合元素
 func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
-	_, err := r.client.SAdd(r.context, key, members).Result()
+	_, err := r.client.SAdd(r.context, r.prefix+key, members).Result()
 	if err != nil {
 		return false
 	}
@@ -107,7 +109,7 @@ func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
 
 // 设置key过期时间
 func (r *Redisclient) Expire(key string, duration time.Duration) bool {
-	b, err := r.client.Expire(r.context, key, duration).Result()
+	b, err := r.client.Expire(r.context, r.prefix+key, duration).Result()
 	if err != nil {
 		return false
 	}
@@ -115,8 +117,8 @@ func (r *Redisclient) Expire(key string, duration time.Duration) bool {
 }
 
 // 判断key是不是存在
-func (r *Redisclient) Exists(keys ...string) bool {
-	_, err := r.client.Exists(r.context, keys...).Result()
+func (r *Redisclient) Exists(keys string) bool {
+	_, err := r.client.Exists(r.context, r.prefix+keys).Result()
 	if err != nil {
 		return false
 	}
@@ -138,14 +140,14 @@ func (r *Redisclient) Incr(parameters ...interface{}) bool {
 	switch len(parameters) {
 	case 1:
 		key := parameters[0].(string)
-		if err := r.client.Incr(r.context, key).Err(); err != nil {
+		if err := r.client.Incr(r.context, r.prefix+key).Err(); err != nil {
 			logger.Error("Redis key1 ", err)
 			return false
 		}
 	case 2:
 		key := parameters[0].(string)
 		value := parameters[1].(int64)
-		if err := r.client.IncrBy(r.context, key, value).Err(); err != nil {
+		if err := r.client.IncrBy(r.context, r.prefix+key, value).Err(); err != nil {
 			logger.Error("Redis key2 ", err)
 			return false
 		}
