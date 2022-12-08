@@ -62,7 +62,7 @@ func (r *Redisclient) Get(k string) string {
 	if err != nil {
 		// 如果返回的错误是key不存在
 		if errors.Is(err, redis.Nil) {
-			logger.Infof("没有获取到redis的值：%s", err)
+			logger.Infof("没有获取到redis %s的值：%s", r.prefix+k, err)
 
 		}
 		return ""
