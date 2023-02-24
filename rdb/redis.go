@@ -17,9 +17,8 @@ type Redisclient struct {
 	prefix  string // 前缀
 }
 
-var rds = &Redisclient{}
-
 func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
+	rds := &Redisclient{}
 	// 初始化日志
 	initlogger()
 	// 初始化自定的 redisclient 实例
