@@ -17,6 +17,7 @@ type Redisclient struct {
 	prefix  string // 前缀
 }
 
+// 使用redis 指定的单个库
 func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 	rds := &Redisclient{}
 	// 初始化日志
