@@ -158,6 +158,18 @@ func (r *Redisclient) Incr(parameters ...interface{}) bool {
 	return true
 }
 
+func (r *Redisclient) Spop(k string) (interface{}, error) {
+	rs, err := r.client.SPop(r.context, k).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return "", errors.New("没有获取到redis的值")
+		}
+		return "", err
+	}
+	return rs, nil
+}
+
 // Select 选择指定的 db
 func (r *Redisclient) Select(db int) {
 	_, err := r.client.Pipelined(r.context, func(pipeliner redis.Pipeliner) error {
