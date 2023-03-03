@@ -163,7 +163,7 @@ func (r *Redisclient) Spop(k string) (interface{}, error) {
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			logger.Infof("没有获取到redis的值：%s", err)
-			return "", errors.New("没有获取到redis的值")
+			return "", nil
 		}
 		return "", err
 	}
