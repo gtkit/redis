@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"gitlab.superjq.com/go-tools/logger"
+	"github.com/gtkit/logger"
 )
 
 type CacheClient struct {

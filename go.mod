@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	gitlab.superjq.com/go-tools/logger v0.0.0-20221123164516-6f9410c6e64d
+	github.com/gtkit/logger v1.0.1
 )
 
 require (
@@ -15,6 +15,7 @@ require (
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible // indirect
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	gitlab.superjq.com/go-tools/news v0.0.0-20221101085330-a5c43ab11c05 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
