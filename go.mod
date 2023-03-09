@@ -1,4 +1,4 @@
-module gitlab.superjq.com/go-tools/redis
+module github.com/gtkit/redis
 
 go 1.17
 
