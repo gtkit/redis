@@ -98,6 +98,15 @@ func (r *Redisclient) Ismember(key string, member interface{}) bool {
 	return ism
 }
 
+func (r *Redisclient) Scard(key string) (int64, error) {
+	ism, err := r.client.SCard(r.context, r.prefix+key).Result()
+	if err != nil {
+		logger.Info("Scard error:", err)
+		return 0, err
+	}
+	return ism, nil
+}
+
 // 添加集合元素
 func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
 	_, err := r.client.SAdd(r.context, r.prefix+key, members).Result()
