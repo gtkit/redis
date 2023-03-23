@@ -34,7 +34,9 @@ func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 	// 测试链接
 	r, err := rds.client.Ping(rds.context).Result()
 	if err != nil {
+		logger.Info("rds.client.Ping failed----", err)
 		logger.Fatal(err)
+		return nil
 	}
 
 	logger.Info("redis connect success!", r)
@@ -98,15 +100,6 @@ func (r *Redisclient) Ismember(key string, member interface{}) bool {
 	return ism
 }
 
-func (r *Redisclient) Scard(key string) (int64, error) {
-	ism, err := r.client.SCard(r.context, r.prefix+key).Result()
-	if err != nil {
-		logger.Info("Scard error:", err)
-		return 0, err
-	}
-	return ism, nil
-}
-
 // 添加集合元素
 func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
 	_, err := r.client.SAdd(r.context, r.prefix+key, members).Result()
@@ -167,7 +160,7 @@ func (r *Redisclient) Incr(parameters ...interface{}) bool {
 	return true
 }
 
-func (r *Redisclient) Spop(k string) (interface{}, error) {
+func (r *Redisclient) Spop(k string) (string, error) {
 	rs, err := r.client.SPop(r.context, k).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -175,6 +168,66 @@ func (r *Redisclient) Spop(k string) (interface{}, error) {
 			return "", nil
 		}
 		return "", err
+	}
+	return rs, nil
+}
+
+func (r *Redisclient) Lpop(k string) (string, error) {
+	rs, err := r.client.LPop(r.context, k).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return "", nil
+		}
+		return "", err
+	}
+	return rs, nil
+}
+
+func (r *Redisclient) Lpush(k string, val ...interface{}) (int64, error) {
+	rs, err := r.client.LPush(r.context, k, val).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs, nil
+}
+
+func (r *Redisclient) Rpop(k string) (string, error) {
+	rs, err := r.client.RPop(r.context, k).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return "", nil
+		}
+		return "", err
+	}
+	return rs, nil
+}
+
+func (r *Redisclient) Rpush(k string, val ...interface{}) (int64, error) {
+	rs, err := r.client.RPush(r.context, k, val).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs, nil
+}
+
+func (r *Redisclient) Llen(k string) (int64, error) {
+	rs, err := r.client.LLen(r.context, k).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis的值：%s", err)
+			return 0, nil
+		}
+		return 0, err
 	}
 	return rs, nil
 }
