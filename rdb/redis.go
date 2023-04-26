@@ -232,6 +232,18 @@ func (r *Redisclient) Llen(k string) (int64, error) {
 	return rs, nil
 }
 
+// Lrem 移除列表中与参数 value 相等的元素
+func (r *Redisclient) Lrem(k string, count int64, val interface{}) (int64, error) {
+	rs, err := r.client.LRem(r.context, k, count, val).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs, nil
+}
+
 func (r *Redisclient) Hexists(key, field string) (bool, error) {
 	rs, err := r.client.HExists(r.context, key, field).Result()
 	if err != nil {
