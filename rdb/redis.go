@@ -39,7 +39,7 @@ func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 		return nil
 	}
 
-	logger.Info("redis connect success!", r)
+	logger.Info("redis connect success db:", db, " --ping:", r)
 	return rds
 }
 
