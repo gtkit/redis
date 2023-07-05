@@ -4,7 +4,6 @@ package rdb
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/gtkit/logger"
@@ -45,17 +44,26 @@ func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 
 func initlogger() {
 	if logger.Zlog() == nil {
-		opt := &logger.Option{
+		logger.NewZap(&logger.Option{
 			FileStdout: true,
 			Division:   "size",
-		}
-		logger.NewZap(opt)
-		log.Println("redis new zap logger")
+		})
+		logger.Info("--------- redis new zap logger -------------")
 	}
 }
 
 func (r *Redisclient) Client() *redis.Client {
 	return r.client
+}
+
+// Set redis
+func (r *Redisclient) Set(k string, v interface{}, exp time.Duration) bool {
+	err := r.client.Set(r.context, r.prefix+k, v, exp).Err()
+	if err != nil {
+		logger.Info("redis set error:", err)
+		return false
+	}
+	return err == nil
 }
 
 // Get 读取 redis
@@ -71,16 +79,59 @@ func (r *Redisclient) Get(k string) string {
 	}
 	return rs
 }
+func (r *Redisclient) GetBytes(k string) []byte {
+	rs, err := r.client.Get(r.context, r.prefix+k).Bytes()
+	if err != nil {
+		// 如果返回的错误是key不存在
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis %s的值：%s", r.prefix+k, err)
 
-// Set redis
-func (r *Redisclient) Set(k, v string, exp time.Duration) bool {
-	err := r.client.Set(r.context, r.prefix+k, v, exp).Err()
-	return err == nil
+		}
+		return nil
+	}
+	return rs
+}
+func (r *Redisclient) GetInt(k string) int {
+	rs, err := r.client.Get(r.context, r.prefix+k).Int()
+	if err != nil {
+		// 如果返回的错误是key不存在
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis %s的值：%s", r.prefix+k, err)
+
+		}
+		return 0
+	}
+	return rs
+}
+func (r *Redisclient) GetInt64(k string) int64 {
+	rs, err := r.client.Get(r.context, r.prefix+k).Int64()
+	if err != nil {
+		// 如果返回的错误是key不存在
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis %s的值：%s", r.prefix+k, err)
+
+		}
+		return 0
+	}
+	return rs
+}
+
+func (r *Redisclient) GetUint64(k string) uint64 {
+	rs, err := r.client.Get(r.context, r.prefix+k).Uint64()
+	if err != nil {
+		// 如果返回的错误是key不存在
+		if errors.Is(err, redis.Nil) {
+			logger.Infof("没有获取到redis %s的值：%s", r.prefix+k, err)
+
+		}
+		return 0
+	}
+	return rs
 }
 
 // Has 判断一个 key 是否存在，内部错误和 redis.Nil 都返回 false
 func (r *Redisclient) Has(key string) bool {
-	_, err := r.client.Get(r.context, r.prefix+key).Result()
+	_, err := r.client.Exists(r.context, r.prefix+key).Result()
 	if err != nil {
 		if err != redis.Nil {
 			logger.Error("Redis", "Has", err.Error())
