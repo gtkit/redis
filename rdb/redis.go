@@ -171,10 +171,14 @@ func (r *Redisclient) Expire(key string, duration time.Duration) bool {
 
 // 判断key是不是存在
 func (r *Redisclient) Exists(keys string) bool {
-	_, err := r.client.Exists(r.context, r.prefix+keys).Result()
+	val, err := r.client.Get(r.context, r.prefix+keys).Result()
 	if err != nil {
 		return false
 	}
+	if val == "" || err == redis.Nil {
+		return false
+	}
+
 	return true
 }
 
