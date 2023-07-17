@@ -55,6 +55,9 @@ func initlogger() {
 func (r *Redisclient) Client() *redis.Client {
 	return r.client
 }
+func (r *Redisclient) Ctx() context.Context {
+	return r.context
+}
 
 // Set redis
 func (r *Redisclient) Set(k string, v interface{}, exp time.Duration) bool {
