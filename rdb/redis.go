@@ -30,6 +30,7 @@ func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 		Password: Password,
 		DB:       db,
 	})
+
 	// 测试链接
 	r, err := rds.client.Ping(rds.context).Result()
 	if err != nil {
@@ -164,12 +165,13 @@ func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
 }
 
 // 设置key过期时间
-func (r *Redisclient) Expire(key string, duration time.Duration) bool {
-	b, err := r.client.Expire(r.context, r.prefix+key, duration).Result()
+func (r *Redisclient) Expire(key string, dur time.Duration) bool {
+	err := r.client.Expire(r.context, r.prefix+key, dur).Err()
 	if err != nil {
+		logger.Info("Expire error:", err)
 		return false
 	}
-	return b
+	return true
 }
 
 // 判断key是不是存在
@@ -187,7 +189,14 @@ func (r *Redisclient) Exists(keys string) bool {
 
 // Del 删除存储在 redis 里的数据，支持多个 key 传参
 func (r *Redisclient) Del(keys ...string) bool {
-	if err := r.client.Del(r.context, keys...).Err(); err != nil {
+	if len(keys) == 0 {
+		return false
+	}
+	var prekeys []string
+	for _, k := range keys {
+		prekeys = append(prekeys, r.prefix+k)
+	}
+	if err := r.client.Del(r.context, prekeys...).Err(); err != nil {
 		logger.Error("Redis", "Del", err.Error())
 		return false
 	}
@@ -219,7 +228,7 @@ func (r *Redisclient) Incr(parameters ...interface{}) bool {
 }
 
 func (r *Redisclient) Spop(k string) (string, error) {
-	rs, err := r.client.SPop(r.context, k).Result()
+	rs, err := r.client.SPop(r.context, r.prefix+k).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -231,7 +240,7 @@ func (r *Redisclient) Spop(k string) (string, error) {
 }
 
 func (r *Redisclient) Lpop(k string) (string, error) {
-	rs, err := r.client.LPop(r.context, k).Result()
+	rs, err := r.client.LPop(r.context, r.prefix+k).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -243,7 +252,7 @@ func (r *Redisclient) Lpop(k string) (string, error) {
 }
 
 func (r *Redisclient) Lpush(k string, val ...interface{}) (int64, error) {
-	rs, err := r.client.LPush(r.context, k, val).Result()
+	rs, err := r.client.LPush(r.context, r.prefix+k, val).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -255,7 +264,7 @@ func (r *Redisclient) Lpush(k string, val ...interface{}) (int64, error) {
 }
 
 func (r *Redisclient) Rpop(k string) (string, error) {
-	rs, err := r.client.RPop(r.context, k).Result()
+	rs, err := r.client.RPop(r.context, r.prefix+k).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -267,7 +276,7 @@ func (r *Redisclient) Rpop(k string) (string, error) {
 }
 
 func (r *Redisclient) Rpush(k string, val ...interface{}) (int64, error) {
-	rs, err := r.client.RPush(r.context, k, val).Result()
+	rs, err := r.client.RPush(r.context, r.prefix+k, val).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -279,7 +288,7 @@ func (r *Redisclient) Rpush(k string, val ...interface{}) (int64, error) {
 }
 
 func (r *Redisclient) Llen(k string) (int64, error) {
-	rs, err := r.client.LLen(r.context, k).Result()
+	rs, err := r.client.LLen(r.context, r.prefix+k).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			// logger.Infof("没有获取到redis的值：%s", err)
@@ -292,7 +301,7 @@ func (r *Redisclient) Llen(k string) (int64, error) {
 
 // Lrem 移除列表中与参数 value 相等的元素
 func (r *Redisclient) Lrem(k string, count int64, val interface{}) (int64, error) {
-	rs, err := r.client.LRem(r.context, k, count, val).Result()
+	rs, err := r.client.LRem(r.context, r.prefix+k, count, val).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return 0, nil
@@ -303,7 +312,7 @@ func (r *Redisclient) Lrem(k string, count int64, val interface{}) (int64, error
 }
 
 func (r *Redisclient) Hexists(key, field string) (bool, error) {
-	rs, err := r.client.HExists(r.context, key, field).Result()
+	rs, err := r.client.HExists(r.context, r.prefix+key, field).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return false, nil
@@ -314,7 +323,7 @@ func (r *Redisclient) Hexists(key, field string) (bool, error) {
 }
 
 func (r *Redisclient) Hincrby(key, field string, incr int64) (int64, error) {
-	rs, err := r.client.HIncrBy(r.context, key, field, incr).Result()
+	rs, err := r.client.HIncrBy(r.context, r.prefix+key, field, incr).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return 0, nil
@@ -325,7 +334,7 @@ func (r *Redisclient) Hincrby(key, field string, incr int64) (int64, error) {
 }
 
 func (r *Redisclient) Hset(key string, val ...any) (int64, error) {
-	rs, err := r.client.HSet(r.context, key, val).Result()
+	rs, err := r.client.HSet(r.context, r.prefix+key, val).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return 0, nil
@@ -336,7 +345,7 @@ func (r *Redisclient) Hset(key string, val ...any) (int64, error) {
 }
 
 func (r *Redisclient) Hget(key, field string) (string, error) {
-	rs, err := r.client.HGet(r.context, key, field).Result()
+	rs, err := r.client.HGet(r.context, r.prefix+key, field).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return "", nil
