@@ -355,6 +355,17 @@ func (r *Redisclient) Hget(key, field string) (string, error) {
 	return rs, nil
 }
 
+func (r *Redisclient) TTL(key string) (time.Duration, error) {
+	rs, err := r.client.TTL(r.context, r.prefix+key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return rs, nil
+}
+
 // Select 选择指定的 db
 func (r *Redisclient) Select(db int) {
 	_, err := r.client.Pipelined(r.context, func(pipeliner redis.Pipeliner) error {
