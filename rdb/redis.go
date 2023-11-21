@@ -133,19 +133,7 @@ func (r *Redisclient) GetUint64(k string) uint64 {
 	return rs
 }
 
-// Has 判断一个 key 是否存在，内部错误和 redis.Nil 都返回 false
-func (r *Redisclient) Has(key string) bool {
-	_, err := r.client.Exists(r.context, r.prefix+key).Result()
-	if err != nil {
-		if err != redis.Nil {
-			logger.Error("Redis", "Has", err.Error())
-		}
-		return false
-	}
-	return true
-}
-
-// 判断是不是集和中的元素
+// Ismember 判断是不是集和中的元素
 func (r *Redisclient) Ismember(key string, member interface{}) bool {
 	ism, err := r.client.SIsMember(r.context, r.prefix+key, member).Result()
 	if err != nil {
@@ -155,13 +143,31 @@ func (r *Redisclient) Ismember(key string, member interface{}) bool {
 	return ism
 }
 
-// 添加集合元素
+// SIsMember 判断是不是集和中的元素
+func (r *Redisclient) SIsMember(key string, member interface{}) bool {
+	ism, err := r.client.SIsMember(r.context, r.prefix+key, member).Result()
+	if err != nil {
+		logger.Info("SIsMember error:", err)
+		return false
+	}
+	return ism
+}
+
+// SAdd 添加集合元素
 func (r *Redisclient) SAdd(key string, members ...interface{}) bool {
 	_, err := r.client.SAdd(r.context, r.prefix+key, members).Result()
 	if err != nil {
 		return false
 	}
 	return true
+}
+
+// SMembers 获取集合中的元素
+func (r *Redisclient) SMembers(key string, res any) (any, error) {
+	if err := r.client.SMembers(r.context, r.prefix+key).ScanSlice(res); err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // 设置key过期时间
@@ -176,14 +182,19 @@ func (r *Redisclient) Expire(key string, dur time.Duration) bool {
 
 // 判断key是不是存在
 func (r *Redisclient) Exists(keys string) bool {
-	val, err := r.client.Get(r.context, r.prefix+keys).Result()
-	if err != nil {
+	val := r.client.Exists(r.context, r.prefix+keys).Val()
+	if val == 0 {
 		return false
 	}
-	if val == "" || err == redis.Nil {
-		return false
-	}
+	return true
+}
 
+// Has 判断一个 key 是否存在，内部错误和 redis.Nil 都返回 false
+func (r *Redisclient) Has(key string) bool {
+	val := r.client.Exists(r.context, r.prefix+key).Val()
+	if val == 0 {
+		return false
+	}
 	return true
 }
 
