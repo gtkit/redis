@@ -1,4 +1,3 @@
-// @Author xiaozhaofu 2022/11/24 02:10:00
 package cdb
 
 import (
@@ -42,11 +41,7 @@ func NewCache(Addr, Password, Prefix string, db int) *CacheClient {
 
 func initlogger() {
 	if logger.Zlog() == nil {
-		opt := &logger.Option{
-			FileStdout: true,
-			Division:   "size",
-		}
-		logger.NewZap(opt)
+		logger.NewZap(logger.WithFile(true))
 		log.Println("redis new zap logger")
 	}
 }
