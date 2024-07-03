@@ -8,6 +8,7 @@ import (
 // redisClientConfig redis 链接配置信息
 type redisClientConfig struct {
 	host     string
+	username string
 	password string
 	prefix   string
 	db       int
@@ -23,18 +24,19 @@ var once sync.Once
 var redisCollections map[int]*Redisclient
 
 // 使用redis 多个库
-func NewRedisCollection(addr, password, prefix string, dbs []int) map[int]*Redisclient {
-	redisConfigs := setredisConfigs(addr, password, prefix, dbs)
+func NewRedisCollection(addr, username, password, prefix string, dbs []int) map[int]*Redisclient {
+	redisConfigs := setredisConfigs(addr, username, password, prefix, dbs)
 	connectRedis(redisConfigs)
 	return redisCollections
 }
 
-func setredisConfigs(addr, password, prefix string, dbs []int) redisConfigs {
+func setredisConfigs(addr, username, password, prefix string, dbs []int) redisConfigs {
 	redisConfigs := make(redisConfigs)
 
 	for _, db := range dbs {
 		redisConfigs[db] = &redisClientConfig{
 			addr,
+			username,
 			password,
 			prefix,
 			db,
@@ -52,7 +54,7 @@ func connectRedis(configs redisConfigs) {
 		}
 
 		for dbname, rdbconfig := range configs {
-			redisCollections[dbname] = NewRedis(rdbconfig.host, rdbconfig.password, rdbconfig.prefix, rdbconfig.db)
+			redisCollections[dbname] = NewRedis(rdbconfig.host, rdbconfig.username, rdbconfig.password, rdbconfig.prefix, rdbconfig.db)
 		}
 	})
 }

@@ -15,7 +15,7 @@ type Redisclient struct {
 }
 
 // 使用redis 指定的单个库
-func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
+func NewRedis(Addr, Username, Password, Prefix string, db int) *Redisclient {
 	rds := &Redisclient{}
 	// 初始化日志
 	initlogger()
@@ -25,6 +25,7 @@ func NewRedis(Addr, Password, Prefix string, db int) *Redisclient {
 	rds.context = context.Background()
 	rds.client = redis.NewClient(&redis.Options{
 		Addr:     Addr,
+		Username: Username,
 		Password: Password,
 		DB:       db,
 	})
@@ -52,4 +53,8 @@ func (r *Redisclient) Client() *redis.Client {
 }
 func (r *Redisclient) Ctx() context.Context {
 	return r.context
+}
+
+func (r *Redisclient) Close() error {
+	return r.client.Close()
 }
