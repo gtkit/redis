@@ -1,4 +1,4 @@
-package rdb
+package redis
 
 import (
 	"context"
@@ -12,6 +12,14 @@ type Redisclient struct {
 	client  *redis.Client
 	context context.Context
 	prefix  string // 前缀
+}
+
+func New() {
+	//rds := &Redisclient{}
+	// 初始化日志
+	initlogger()
+	// 初始化自定的 redisclient 实例
+
 }
 
 // 使用redis 指定的单个库

@@ -1,5 +1,4 @@
-// @Author xiaozhaofu 2023/2/24 20:24:00
-package rdb
+package redis
 
 import (
 	"sync"
