@@ -4,17 +4,30 @@ import (
 	"sync"
 )
 
-// redisClientConfig redis 链接配置信息
-type redisClientConfig struct {
-	host     string
+type DBConfig struct {
+	Prefix string
+	DB     int
+}
+
+// ClientConfig redis 链接配置信息
+type ClientConfig struct {
+	Addr     string
+	UserName string
+	Password string
+	DBConfig
+}
+
+//go:generate go-option -type ConnConfig
+type ConnConfig struct {
+	_        [0]func() // 占位符，防止被其他包引用
+	addr     string
 	username string
 	password string
-	prefix   string
-	db       int
+	dbconfig []DBConfig
 }
 
 // redisConfigs 分组配置信息
-type redisConfigs map[int]*redisClientConfig
+type redisConfigs map[int]*ClientConfig
 
 // once 确保全局Redis对象只实例一次
 var once sync.Once
@@ -23,22 +36,26 @@ var once sync.Once
 var redisCollections map[int]*Redisclient
 
 // 使用redis 多个库
-func NewRedisCollection(addr, username, password, prefix string, dbs []int) map[int]*Redisclient {
-	redisConfigs := setredisConfigs(addr, username, password, prefix, dbs)
+// func NewCollection(addr, username, password string, dbconf []dbConfig) map[int]*Redisclient {
+func NewCollection(opts ...ConnConfigOption) map[int]*Redisclient {
+	redisConfigs := setredisConfigs(opts...)
 	connectRedis(redisConfigs)
 	return redisCollections
 }
 
-func setredisConfigs(addr, username, password, prefix string, dbs []int) redisConfigs {
+func setredisConfigs(opts ...ConnConfigOption) redisConfigs {
 	redisConfigs := make(redisConfigs)
+	conf := NewConnConfig(opts...)
 
-	for _, db := range dbs {
-		redisConfigs[db] = &redisClientConfig{
-			addr,
-			username,
-			password,
-			prefix,
-			db,
+	for _, dc := range conf.dbconfig {
+		redisConfigs[dc.DB] = &ClientConfig{
+			conf.addr,
+			conf.username,
+			conf.password,
+			DBConfig{
+				dc.Prefix,
+				dc.DB,
+			},
 		}
 	}
 
@@ -53,7 +70,7 @@ func connectRedis(configs redisConfigs) {
 		}
 
 		for dbname, rdbconfig := range configs {
-			redisCollections[dbname] = NewRedis(rdbconfig.host, rdbconfig.username, rdbconfig.password, rdbconfig.prefix, rdbconfig.db)
+			redisCollections[dbname] = New(rdbconfig)
 		}
 	})
 }

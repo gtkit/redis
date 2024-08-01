@@ -1,7 +1,9 @@
 package redis
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gtkit/logger"
@@ -11,12 +13,17 @@ import (
 
 // Set redis
 func (r *Redisclient) Set(k string, v interface{}, exp time.Duration) bool {
-	err := r.client.Set(r.context, r.prefix+k, v, exp).Err()
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+
+	err := r.client.Set(ctx, r.prefix+k, v, exp).Err()
+
 	if err != nil {
 		logger.ZError("redis set error ", zap.Error(err))
+		fmt.Println("redis set error ", err)
 		return false
 	}
-	return err == nil
+	return true
 }
 
 // Get 读取 redis
@@ -158,17 +165,4 @@ func (r *Redisclient) TTL(key string) (time.Duration, error) {
 		return 0, err
 	}
 	return rs, nil
-}
-
-// Select 选择指定的 db
-func (r *Redisclient) Select(db int) {
-	_, err := r.client.Pipelined(r.context, func(pipeliner redis.Pipeliner) error {
-		pipeliner.Select(r.context, db)
-		return nil
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
 }

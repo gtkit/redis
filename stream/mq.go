@@ -8,16 +8,16 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/gtkit/redis/rdb"
+	rdb "github.com/gtkit/redis"
 )
 
 // RedisStreamWrapper interface to handle streams
 type RedisStreamWrapper interface {
 	// SetChannels set the message and error channels
 	SetChannels(messageChan chan interface{}, errChan chan error)
-	// Publish publish data into the stream
+	// Publish data into the stream
 	Publish(message interface{}) (string, error)
-	// Consume consume messages from the stream with a count limit. If 0 it will consume all messages
+	// Consume messages from the stream with a count limit. If 0 it consumes all messages
 	Consume(count int64)
 	// MessageChannel get the message channel
 	MessageChannel() chan interface{}
@@ -80,7 +80,7 @@ func (s *redisStreamWrapper) Publish(message interface{}) (string, error) {
 	return s.client().XAdd(s.ctx(), &args).Result()
 }
 
-// Consume consume messages from the stream with a count limit. If 0 it will consume all messages
+// Consume messages from the stream with a count limit. If 0 it will consume all messages
 func (s *redisStreamWrapper) Consume(count int64) {
 	go func() {
 		for {
