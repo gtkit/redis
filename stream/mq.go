@@ -16,9 +16,9 @@ type RedisStreamWrapper interface {
 	// SetChannels set the message and error channels
 	SetChannels(messageChan chan interface{}, errChan chan error)
 	// Publish data into the stream
-	Publish(message interface{}) (string, error)
+	Publish(ctx context.Context, message interface{}) (string, error)
 	// Consume messages from the stream with a count limit. If 0 it consumes all messages
-	Consume(count int64)
+	Consume(ctx context.Context, count int64)
 	// MessageChannel get the message channel
 	MessageChannel() chan interface{}
 	// ErrorChannel get the error channel
@@ -38,10 +38,6 @@ type redisStreamWrapper struct {
 
 func (s *redisStreamWrapper) client() *redis.Client {
 	return s.c.Client()
-}
-
-func (s *redisStreamWrapper) ctx() context.Context {
-	return s.c.Ctx()
 }
 
 // SetChannels set the message and error channels
@@ -70,26 +66,26 @@ func (s *redisStreamWrapper) FinishedChannel() chan bool {
 }
 
 // Publish data into the stream
-func (s *redisStreamWrapper) Publish(message interface{}) (string, error) {
+func (s *redisStreamWrapper) Publish(ctx context.Context, message interface{}) (string, error) {
 	args := redis.XAddArgs{
 		Stream: s.stream,
 		Values: map[string]interface{}{
 			"data": message,
 		},
 	}
-	return s.client().XAdd(s.ctx(), &args).Result()
+	return s.client().XAdd(ctx, &args).Result()
 }
 
 // Consume messages from the stream with a count limit. If 0 it will consume all messages
-func (s *redisStreamWrapper) Consume(count int64) {
+func (s *redisStreamWrapper) Consume(ctx context.Context, count int64) {
 	go func() {
 		for {
 			var err error
 			var data []redis.XMessage
 			if count > 0 {
-				data, err = s.client().XRangeN(s.ctx(), s.stream, "-", "+", count).Result()
+				data, err = s.client().XRangeN(ctx, s.stream, "-", "+", count).Result()
 			} else {
-				data, err = s.client().XRange(s.ctx(), s.stream, "-", "+").Result()
+				data, err = s.client().XRange(ctx, s.stream, "-", "+").Result()
 			}
 			if err != nil {
 				s.errChan <- err
@@ -104,7 +100,7 @@ func (s *redisStreamWrapper) Consume(count int64) {
 					continue
 				}
 				s.messageChan <- message
-				s.client().XDel(s.ctx(), s.stream, element.ID) // Remove consumed message
+				s.client().XDel(ctx, s.stream, element.ID) // Remove consumed message
 			}
 		}
 	}()

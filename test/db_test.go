@@ -23,7 +23,11 @@ func TestConn(t *testing.T) {
 		redis.WithAddr("127.0.0.1:6379"),
 		redis.WithDB(0, "test"),
 		redis.WithDB(1),
+		redis.WithDB(2, "prefix:test2"),
 	)
-	conn[0].Client().Ping(context.Background())
+	c := conn[0].Client()
+	c.Ping(context.Background())
+	rdb := redis.Select(2)
+	rdb.Client().Set(context.Background(), rdb.Prefix()+"key:2", "value:2", 0)
 
 }

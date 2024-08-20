@@ -89,10 +89,8 @@ func (d dbconfig) apply(opt *ConnConfig) {
 
 // WithDbconfig Option.
 func WithDB(DB int, prefix ...string) ConnConfigOption {
-	var pre string
-	if len(prefix) == 0 {
-		pre = ""
-	} else {
+	pre := ""
+	if len(prefix) > 0 {
 		pre = prefix[0]
 	}
 
