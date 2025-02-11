@@ -2,6 +2,8 @@ package redis
 
 import (
 	"sync"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type DBConfig struct {
@@ -52,6 +54,17 @@ func Select(db int) *Redisclient {
 
 	if rdb, ok := redisCollections[db]; ok {
 		return rdb
+	}
+	return nil
+}
+
+func Client(db int) *redis.Client {
+	if redisCollections == nil {
+		return nil
+	}
+
+	if rdb, ok := redisCollections[db]; ok {
+		return rdb.Client()
 	}
 	return nil
 }
