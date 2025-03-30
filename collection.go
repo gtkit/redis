@@ -72,6 +72,9 @@ func Client(db int) *redis.Client {
 func setredisConfigs(opts ...ConnConfigOption) redisConfigs {
 	redisConfigs := make(redisConfigs)
 	conf := NewConnConfig(opts...)
+	if conf.addr == "" {
+		conf.addr = "127.00.0.1:6379"
+	}
 
 	for _, dc := range conf.dbconfig {
 		redisConfigs[dc.DB] = &ClientConfig{
