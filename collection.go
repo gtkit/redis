@@ -30,23 +30,22 @@ type ConnConfig struct {
 	dbconfig   []DBConfig
 }
 
-// redisConfigs 分组配置信息
+// redisConfigs 分组配置信息.
 type redisConfigs map[int]*ClientConfig
 
-// once 确保全局Redis对象只实例一次
+// once 确保全局Redis对象只实例一次.
 var once sync.Once
 
-// redisCollections redis对象集合
+// redisCollections redis对象集合.
 var redisCollections map[int]*Redisclient
 
-// 使用redis 多个库
-// func NewCollection(addr, username, password string, dbconf []dbConfig) map[int]*Redisclient {
+// NewCollection 使用redis 多个库.
 func NewCollection(opts ...ConnConfigOption) map[int]*Redisclient {
 	connectRedis(setredisConfigs(opts...))
 	return redisCollections
 }
 
-// Select 获取指定库的 Redis 对象
+// Select 获取指定库的 Redis 对象.
 func Select(db int) *Redisclient {
 	if redisCollections == nil {
 		return nil
@@ -92,7 +91,7 @@ func setredisConfigs(opts ...ConnConfigOption) redisConfigs {
 	return redisConfigs
 }
 
-// ConnectRedis 连接 redis 数据库，设置全局的 Redis 对象
+// ConnectRedis 连接 redis 数据库，设置全局的 Redis 对象.
 func connectRedis(configs redisConfigs) {
 	once.Do(func() {
 		if redisCollections == nil {

@@ -1,14 +1,11 @@
 module github.com/gtkit/redis
 
-go 1.24
-
-toolchain go1.24.4
+go 1.26
 
 require (
 	github.com/gtkit/logger v1.3.0
-	github.com/redis/go-redis/v9 v9.11.0
-	github.com/vmihailenco/msgpack/v5 v5.4.1
-	go.uber.org/zap v1.27.0
+	github.com/redis/go-redis/v9 v9.18.0
+	go.uber.org/zap v1.27.1
 )
 
 require (
@@ -19,6 +16,6 @@ require (
 	github.com/lestrrat-go/strftime v1.1.1 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 )

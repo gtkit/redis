@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"time"
 
 	"github.com/gtkit/logger"
 	"github.com/redis/go-redis/v9"
@@ -46,79 +45,26 @@ func initlogger() {
 	}
 }
 
-// Client 返回redis的client实例
+// Client 返回redis的client实例.
 func (r *Redisclient) Client() *redis.Client {
 	return r.client
 }
 
-// Close 关闭redis链接
+// Close 关闭redis链接.
 func (r *Redisclient) Close() error {
 	return r.client.Close()
 }
 
-// Prefix 返回redis的前缀
+// Prefix 返回redis的前缀.
 func (r *Redisclient) Prefix() string {
 	return r.prefix
 }
 
-// Select 选择指定的 db
-// func (r *Redisclient) Select(db int) *Redisclient {
-// 	if r.currentDB == db {
-// 		return r
-// 	}
-//
-// 	r.Lock()
-// 	defer func() {
-// 		r.Unlock()
-// 	}()
-//
-// 	if db < 0 {
-// 		db = 0
-// 	}
-// 	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
-// 	defer cancel()
-//
-// 	_, err := r.client.Pipelined(ctx, func(p redis.Pipeliner) error {
-// 		p.Select(ctx, db)
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		logger.ZError("redis select db failed", zap.Int("db", db), zap.Error(err))
-// 		return nil
-// 	}
-// 	r.currentDB = db
-// 	return r
-// }
-//
-// func (r *Redisclient) ResetDB() {
-// 	if r.currentDB == r.defaultDB {
-// 		return
-// 	}
-// 	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
-// 	defer cancel()
-// 	_, err := r.client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-// 		pipe.Select(ctx, r.defaultDB)
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		logger.ZError("redis select db failed", zap.Int("db", r.defaultDB), zap.Error(err))
-// 		return
-// 	}
-// 	r.currentDB = r.defaultDB
-// }
 
 // BatchDel 批量删除redis中匹配的key.
+//
 // match: 匹配的key 如: "user:*".
-func (r *Redisclient) BatchDel(match string, timeout ...time.Duration) {
-	outtime := 5 * time.Second
-
-	if len(timeout) > 0 {
-		outtime = timeout[0]
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), outtime)
-	defer cancel()
-
+func (r *Redisclient) BatchDel(ctx context.Context,match string) {
 	iter := r.client.Scan(ctx, 0, match, 0).Iterator()
 	if err := iter.Err(); err != nil {
 		logger.Info("scan keys err: ", err)
