@@ -11,7 +11,7 @@ type DBConfig struct {
 	DB     int
 }
 
-// ClientConfig redis 链接配置信息
+// ClientConfig redis 链接配置信息.
 type ClientConfig struct {
 	Addr       string
 	UserName   string
