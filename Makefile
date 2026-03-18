@@ -34,3 +34,7 @@ tag:
 
 gittag:
 	git tag --sort=-version:refname | head -1
+
+## 删除最近一次提交，但保留修改内容
+delcommit:
+	git reset --soft HEAD~1

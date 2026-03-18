@@ -67,16 +67,15 @@ func (r *Redisclient) Prefix() string {
 func (r *Redisclient) BatchDel(ctx context.Context,match string) {
 	iter := r.client.Scan(ctx, 0, match, 0).Iterator()
 	if err := iter.Err(); err != nil {
-		logger.Info("scan keys err: ", err)
+		logger.Info("scan keys err: ", zap.Error(err))
 		return
 	}
 
 	for iter.Next(ctx) {
 		val := iter.Val()
 		err := r.client.Del(ctx, val).Err()
-		logger.Info("--- del key ---", val)
 		if err != nil {
-			logger.Info("del key err: ", err)
+			logger.Info("del key err: ", zap.Error(err))
 			continue
 		}
 	}
